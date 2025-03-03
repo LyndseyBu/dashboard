@@ -47,6 +47,7 @@ const LogsToolbar = ({
     <div className={`${carbonPrefix}--btn-set`}>
       {onToggleMaximized ? (
         <button
+          aria-label={isMaximized ? 'Return to default' : 'Maximize'}
           className={`${carbonPrefix}--btn ${carbonPrefix}--btn--icon-only ${carbonPrefix}--copy-btn`}
           onClick={onToggleMaximized}
           type="button"
