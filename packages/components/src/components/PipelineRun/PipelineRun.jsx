@@ -69,7 +69,18 @@ export default /* istanbul ignore next */ function PipelineRun({
   taskRuns,
   tasks,
   triggerHeader,
-  view = null
+  workerInfo,
+  view = null,
+  getLabels = () => {
+    const { labels = {} } = pipelineRun?.metadata || {};
+    return labels;
+  },
+  getTriggerInfo = () => {
+    const { labels = {} } = pipelineRun.metadata;
+    const eventListener = labels['triggers.tekton.dev/eventlistener'];
+    const trigger = labels['triggers.tekton.dev/trigger'];
+    return { eventListener, trigger };
+  }
 }) {
   const intl = useIntl();
   const [isLogsMaximized, setIsLogsMaximized] = useState(false);
@@ -89,6 +100,12 @@ export default /* istanbul ignore next */ function PipelineRun({
       !taskRunsStatus &&
       !childReferences && { message, reason }
     );
+  }
+
+  function getRunTimeInfo() {
+    const completed = pipelineRun?.status?.completionTime;
+    const started = pipelineRun?.status?.startTime;
+    return { completed, started };
   }
 
   function onToggleLogsMaximized() {
@@ -323,6 +340,10 @@ export default /* istanbul ignore next */ function PipelineRun({
         reason={pipelineRunReason}
         status={pipelineRunStatus}
         triggerHeader={triggerHeader}
+        getRunTriggerInfo={getTriggerInfo}
+        workerInfo={workerInfo}
+        getRunTimeInfo={getRunTimeInfo}
+        getLabels={getLabels}
       >
         {runActions}
       </RunHeader>

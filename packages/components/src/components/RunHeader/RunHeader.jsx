@@ -10,11 +10,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
+import { useRef } from 'react';
 import { useIntl } from 'react-intl';
-import { CopyButton, SkeletonPlaceholder } from '@carbon/react';
+import {
+  Column,
+  CopyButton,
+  FlexGrid,
+  Row,
+  SkeletonPlaceholder,
+  Tag
+} from '@carbon/react';
+import { ExpressiveCard, TagSet } from '@carbon/ibm-products';
 import { copyToClipboard } from '@tektoncd/dashboard-utils';
-
+import { TYPES as tagTypes } from '@carbon/react/es/components/Tag/Tag';
 import FormattedDate from '../FormattedDate';
 
 export default function RunHeader({
@@ -26,84 +34,134 @@ export default function RunHeader({
   runName,
   reason,
   status,
-  triggerHeader
+  triggerHeader,
+  workerInfo,
+  getRunTriggerInfo,
+  getLabels,
+  getRunTimeInfo
 }) {
   const intl = useIntl();
-
+  const containerRef = useRef(null);
   /* istanbul ignore next */
   function copyStatusMessage() {
     copyToClipboard(message);
   }
 
+  const { completed, started } = getRunTimeInfo();
+  const { eventListener, trigger } = getRunTriggerInfo();
+
+  const labels = getLabels();
+  let showTags;
+  if (labels) {
+    const labels1 = Object.entries(labels).map(([key, value]) => ({
+      type: tagTypes[tagTypes.length],
+      label: `${key}: ${value}`
+    }));
+    showTags = {
+      label: 'Labels',
+      children: (
+        <div id="testing" className="container" ref={containerRef}>
+          <TagSet
+            containingElementRef={containerRef}
+            tags={labels1}
+            maxVisible={2}
+            allTagsModalSearchLabel="Filter tags"
+            allTagsModalTile="All tags"
+            allTagsModalSearchPlaceholderText="Filter tags"
+            showAllTagsLabel="Show all tags"
+            size="sm"
+            multiline
+            measurementOffset={4}
+            overflowAutoAlign={false}
+          />
+        </div>
+      )
+    };
+  }
+  const displayWorkerInfo = {
+    label: 'Worker',
+    children: <div>{workerInfo}</div>
+  };
+
+  const triggerInfo = {
+    label: 'Triggered by',
+    children: (
+      <>
+        <div>{eventListener}</div>
+        <div>{trigger}</div>
+      </>
+    )
+  };
+
+  const timeInfo = {
+    label: 'Time',
+    children: (
+      <>
+        <div>
+          Started:
+          <FormattedDate date={started} />
+        </div>
+        <div>
+          Completed:
+          <FormattedDate date={completed} />
+        </div>
+      </>
+    )
+  };
+
   return (
-    <header
-      className="tkn--pipeline-run-header"
-      data-succeeded={status}
-      data-reason={reason}
-    >
-      {(() => {
-        if (loading) {
+    <>
+      <h1 className="tkn--run-header--heading actions button">{children}</h1>
+      <header
+        className="tkn--pipeline-run-header"
+        data-succeeded={status}
+        data-reason={reason}
+      >
+        {(() => {
+          if (loading) {
+            return (
+              <SkeletonPlaceholder
+                className="tkn--header-skeleton"
+                title={intl.formatMessage({
+                  id: 'dashboard.loading',
+                  defaultMessage: 'Loading…'
+                })}
+              />
+            );
+          }
           return (
-            <SkeletonPlaceholder
-              className="tkn--header-skeleton"
-              title={intl.formatMessage({
-                id: 'dashboard.loading',
-                defaultMessage: 'Loading…'
-              })}
-            />
-          );
-        }
-        return (
-          runName && (
-            <>
-              <h1 className="tkn--run-header--heading">
-                <div className="tkn--run-name" title={runName}>
-                  {runName}
-                </div>
-                {icon}
-                <span className="tkn--time">
-                  {lastTransitionTime
-                    ? intl.formatMessage(
-                        {
-                          id: 'dashboard.lastUpdated',
-                          defaultMessage: 'Last updated {time}'
-                        },
-                        {
-                          time: (
-                            <FormattedDate date={lastTransitionTime} relative />
-                          )
-                        }
-                      )
-                    : null}
-                </span>
+            runName && (
+              <>
+                {/* <h1 className="tkn--run-header--heading actions button">
                 {children}
-              </h1>
-              <div className="tkn--status">
-                <span className="tkn--status-label">{reason}</span>
-                {message && (
-                  <>
-                    <span className="tkn--status-message" title={message}>
-                      {message}
-                    </span>
-                    <CopyButton
-                      feedback={intl.formatMessage({
-                        id: 'dashboard.clipboard.copied',
-                        defaultMessage: 'Copied!'
-                      })}
-                      iconDescription={intl.formatMessage({
-                        id: 'dashboard.clipboard.copyStatusMessage',
-                        defaultMessage: 'Copy status message to clipboard'
-                      })}
-                      onClick={copyStatusMessage}
-                    />
-                  </>
-                )}
-              </div>
-              {triggerHeader}
-            </>
-          )
-        );
-      })()}
-    </header>
+              </h1> */}
+
+                <FlexGrid fullWidth>
+                  <Row>
+                    <Column>
+                      <ExpressiveCard {...triggerInfo} />
+                    </Column>
+                    {labels && (
+                      <Column>
+                        <ExpressiveCard {...showTags} />
+                      </Column>
+                    )}
+                    <Column>
+                      <ExpressiveCard {...timeInfo} />
+                    </Column>
+                    {workerInfo && (
+                      <Column>
+                        <ExpressiveCard {...displayWorkerInfo} />
+                      </Column>
+                    )}
+                  </Row>
+                </FlexGrid>
+                {triggerHeader}
+              </>
+            )
+          );
+        })()}
+      </header>
+    </>
   );
 }

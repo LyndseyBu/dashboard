@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
+@use '@carbon/ibm-products/css/index';
 @use '@carbon/react/scss/themes';
 @use '@carbon/react/scss/theme' as *;
 
@@ -32,6 +32,9 @@ body.tkn--dashboard.tkn--theme-dark, .tkn--theme-dark {
   }
 }
 
+.cds--tag{
+  margin-left: 0px;
+}
 .tkn--tooltip-trigger {
   appearance: none;
   padding: 0;
