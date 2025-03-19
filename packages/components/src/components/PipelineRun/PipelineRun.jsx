@@ -75,7 +75,7 @@ export default /* istanbul ignore next */ function PipelineRun({
     const { labels = {} } = pipelineRun?.metadata || {};
     return labels;
   },
-  getTriggerInfo = () => {
+  getRunTriggerInfo = () => {
     const { labels = {} } = pipelineRun.metadata;
     const eventListener = labels['triggers.tekton.dev/eventlistener'];
     const trigger = labels['triggers.tekton.dev/trigger'];
@@ -257,6 +257,7 @@ export default /* istanbul ignore next */ function PipelineRun({
           reason="Error"
           status={pipelineRunStatus}
           triggerHeader={triggerHeader}
+          getRunTriggerInfo={getRunTriggerInfo}
         />
         {customNotification}
         <InlineNotification
@@ -340,7 +341,7 @@ export default /* istanbul ignore next */ function PipelineRun({
         reason={pipelineRunReason}
         status={pipelineRunStatus}
         triggerHeader={triggerHeader}
-        getRunTriggerInfo={getTriggerInfo}
+        getRunTriggerInfo={getRunTriggerInfo}
         workerInfo={workerInfo}
         getRunTimeInfo={getRunTimeInfo}
         getLabels={getLabels}

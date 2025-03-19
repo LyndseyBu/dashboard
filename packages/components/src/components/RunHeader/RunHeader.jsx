@@ -48,7 +48,7 @@ export default function RunHeader({
   }
 
   const { completed, started } = getRunTimeInfo();
-  const { eventListener, trigger } = getRunTriggerInfo();
+  //const { eventListener, trigger } = getRunTriggerInfo();
 
   const labels = getLabels();
   let showTags;
@@ -58,7 +58,6 @@ export default function RunHeader({
       label: `${key}: ${value}`
     }));
     showTags = {
-      label: 'Labels',
       children: (
         <div id="testing" className="container" ref={containerRef}>
           <TagSet
@@ -79,22 +78,23 @@ export default function RunHeader({
     };
   }
   const displayWorkerInfo = {
-    label: 'Worker',
     children: <div>{workerInfo}</div>
   };
-
-  const triggerInfo = {
-    label: 'Triggered by',
-    children: (
-      <>
-        <div>{eventListener}</div>
-        <div>{trigger}</div>
-      </>
-    )
-  };
-
+  let triggerInfo;
+  const triggerInfoData = getRunTriggerInfo();
+  if (Object.values(triggerInfoData).some(value => value)) {
+    triggerInfo = {
+      children: (
+        <>
+          {Object.entries(triggerInfoData).map(([key, value]) =>
+            value ? <div key={key}>{value}</div> : null
+          )}
+          {triggerHeader}
+        </>
+      )
+    };
+  }
   const timeInfo = {
-    label: 'Time',
     children: (
       <>
         <div>
@@ -131,33 +131,34 @@ export default function RunHeader({
           }
           return (
             runName && (
-              <>
-                {/* <h1 className="tkn--run-header--heading actions button">
-                {children}
-              </h1> */}
-
-                <FlexGrid fullWidth>
-                  <Row>
+              <FlexGrid fullWidth>
+                <Row>
+                  {triggerInfoData && (
                     <Column>
-                      <ExpressiveCard {...triggerInfo} />
+                      <ExpressiveCard label="Triggered by" {...triggerInfo} />
                     </Column>
-                    {labels && (
+                  )}
+                  {/* {triggerHeader && (
                       <Column>
-                        <ExpressiveCard {...showTags} />
+                        <ExpressiveCard label="Triggered by" {...triggerInfo} />
+                        {triggerHeader}
                       </Column>
-                    )}
+                    )} */}
+                  {labels && (
                     <Column>
-                      <ExpressiveCard {...timeInfo} />
+                      <ExpressiveCard label="Labels" {...showTags} />
                     </Column>
-                    {workerInfo && (
-                      <Column>
-                        <ExpressiveCard {...displayWorkerInfo} />
-                      </Column>
-                    )}
-                  </Row>
-                </FlexGrid>
-                {triggerHeader}
-              </>
+                  )}
+                  {workerInfo && (
+                    <Column>
+                      <ExpressiveCard label="Worker" {...displayWorkerInfo} />
+                    </Column>
+                  )}
+                  <Column>
+                    <ExpressiveCard label="Time" {...timeInfo} />
+                  </Column>
+                </Row>
+              </FlexGrid>
             )
           );
         })()}
