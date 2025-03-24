@@ -38,7 +38,9 @@ export default function RunHeader({
   workerInfo,
   getRunTriggerInfo,
   getLabels,
-  getRunTimeInfo
+  getRunTimeInfo,
+  sourceRun,
+  runDescription
 }) {
   const intl = useIntl();
   const containerRef = useRef(null);
@@ -47,9 +49,29 @@ export default function RunHeader({
     copyToClipboard(message);
   }
 
-  const { completed, started } = getRunTimeInfo();
-  //const { eventListener, trigger } = getRunTriggerInfo();
+  let timeInfo;
+  if (getRunTimeInfo) {
+    const { completed, started } = getRunTimeInfo();
+    timeInfo = {
+      children: (
+        <>
+          <div>
+            Started:
+            <FormattedDate date={started} />
+          </div>
+          <div>
+            Completed:
+            <FormattedDate date={completed} />
+          </div>
+        </>
+      )
+    };
+  }
 
+  let sourceRunContent;
+  if (sourceRun) {
+    sourceRunContent = { children: <div>{sourceRun}</div> };
+  }
   const labels = getLabels();
   let showTags;
   if (labels) {
@@ -77,6 +99,10 @@ export default function RunHeader({
       )
     };
   }
+
+  const runDesc = {
+    children: runDescription
+  };
   const displayWorkerInfo = {
     children: <div>{workerInfo}</div>
   };
@@ -94,20 +120,6 @@ export default function RunHeader({
       )
     };
   }
-  const timeInfo = {
-    children: (
-      <>
-        <div>
-          Started:
-          <FormattedDate date={started} />
-        </div>
-        <div>
-          Completed:
-          <FormattedDate date={completed} />
-        </div>
-      </>
-    )
-  };
 
   return (
     <>
@@ -149,6 +161,11 @@ export default function RunHeader({
                       <ExpressiveCard label="Labels" {...showTags} />
                     </Column>
                   )}
+                  {sourceRun && (
+                    <Column>
+                      <ExpressiveCard label="Rerun" {...sourceRunContent} />
+                    </Column>
+                  )}
                   {workerInfo && (
                     <Column>
                       <ExpressiveCard label="Worker" {...displayWorkerInfo} />
@@ -157,6 +174,13 @@ export default function RunHeader({
                   <Column>
                     <ExpressiveCard label="Time" {...timeInfo} />
                   </Column>
+                </Row>
+                <Row>
+                  {runDescription && (
+                    <Column>
+                      <ExpressiveCard label="Description" {...runDesc} />
+                    </Column>
+                  )}
                 </Row>
               </FlexGrid>
             )
