@@ -1,0 +1,73 @@
+
+/*
+Copyright 2019-2024 The Tekton Authors
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+.overflow-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .overflow-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: black;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 4px;
+    min-width: 200px;
+  }
+  .button-like-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #8d8d8d; /* Border from gray OperationalTag */
+    border-radius: 16px; /* Rounded corners same as OperationalTag */
+   // padding: 4px 12px; /* Match OperationalTag padding */
+   padding-inline: 0.5rem;
+    background-color: #525252; /* Background color identical to gray OperationalTag */
+    color: #e0e0e0; /* Font color consistent with OperationalTag */
+    font-size: 14px; /* Font size matching OperationalTag */
+    font-weight: normal; /* Ensure the font weight matches OperationalTag */
+    cursor: pointer; /* Interactive cursor */
+    transition: background-color 0.2s, border-color 0.2s;
+  
+    &:hover {
+      background-color: #e0e0e0; /* Hover effect consistent with OperationalTag */
+    }
+  
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2); /* Focus indicator for accessibility */
+    }
+  }
+  .custom-overflow-menu-container .cds--tag {
+    max-width: none; // Remove any max-width restriction
+    white-space: nowrap; // Prevent text from wrapping
+    overflow: hidden; // Ensure overflow is hidden
+    text-overflow: ellipsis; // Add ellipsis for overflow text
+  }
+  
+//   .dropdown-item {
+//     margin-bottom: 8px;
+//   }
+  

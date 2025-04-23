@@ -16,6 +16,7 @@ import { CopyButton, SkeletonPlaceholder } from '@carbon/react';
 import { copyToClipboard } from '@tektoncd/dashboard-utils';
 
 import FormattedDate from '../FormattedDate';
+import CustomOverflowMenu from '../TagOverflow/TagOverflow';
 
 export default function RunHeader({
   children,
@@ -25,13 +26,20 @@ export default function RunHeader({
   runName,
   reason,
   status,
-  triggerHeader
+  triggerHeader,
+  runTimeInfo,
+  getLabels
 }) {
   const intl = useIntl();
 
-  /* istanbul ignore next */
-  function copyStatusMessage() {
-    copyToClipboard(message);
+  let column;
+  if (getLabels) {
+    column = (
+      <div className="timeContainer">
+        <p className="colHeader">Labels</p>
+        <CustomOverflowMenu labels={getLabels} />
+      </div>
+    );
   }
 
   return (
@@ -59,45 +67,12 @@ export default function RunHeader({
                 <div className="tkn--run-name" title={runName}>
                   {runName}
                 </div>
-                <span className="tkn--time">
-                  {lastTransitionTime
-                    ? intl.formatMessage(
-                        {
-                          id: 'dashboard.lastUpdated',
-                          defaultMessage: 'Last updated {time}'
-                        },
-                        {
-                          time: (
-                            <FormattedDate date={lastTransitionTime} relative />
-                          )
-                        }
-                      )
-                    : null}
-                </span>
-                {children}
               </h1>
-              <div className="tkn--status">
-                <span className="tkn--status-label">{reason}</span>
-                {message && (
-                  <>
-                    <span className="tkn--status-message" title={message}>
-                      {message}
-                    </span>
-                    <CopyButton
-                      feedback={intl.formatMessage({
-                        id: 'dashboard.clipboard.copied',
-                        defaultMessage: 'Copied!'
-                      })}
-                      iconDescription={intl.formatMessage({
-                        id: 'dashboard.clipboard.copyStatusMessage',
-                        defaultMessage: 'Copy status message to clipboard'
-                      })}
-                      onClick={copyStatusMessage}
-                    />
-                  </>
-                )}
+              <div className="container">
+                {triggerHeader}
+                {column}
+                {runTimeInfo}
               </div>
-              {triggerHeader}
             </>
           )
         );

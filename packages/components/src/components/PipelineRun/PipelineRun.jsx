@@ -28,6 +28,7 @@ import RunHeader from '../RunHeader';
 import StepDetails from '../StepDetails';
 import TaskRunDetails from '../TaskRunDetails';
 import TaskTree from '../TaskTree';
+import FormattedDate from '../FormattedDate';
 
 function getPipelineTask({ pipeline, pipelineRun, selectedTaskId, taskRun }) {
   const memberOf = taskRun?.metadata?.labels?.[labelConstants.MEMBER_OF];
@@ -49,6 +50,8 @@ export default /* istanbul ignore next */ function PipelineRun({
   forceLogPolling,
   getLogsToolbar,
   handleTaskSelected = /* istanbul ignore next */ () => {},
+  handlePipelineRunInfo = () => {},
+
   loading,
   logLevels,
   maximizedLogsContainer,
@@ -67,11 +70,36 @@ export default /* istanbul ignore next */ function PipelineRun({
   showLogTimestamps,
   taskRuns,
   tasks,
+  //labels,
   triggerHeader,
+  sourceRun,
   view = null
 }) {
   const intl = useIntl();
   const [isLogsMaximized, setIsLogsMaximized] = useState(false);
+
+  // const displayLabels = labels || (
+  //   <div className="timeContainer">
+  //     <p className="colHeader">Labels</p>
+  //     {Object.entries(pipelineRun?.metadata?.labels || {}).map(([key]) => (
+  //       <OperationalTag key={key} text={key} />
+  //     ))}
+  //   </div>
+  // );
+
+  const displayLabels = pipelineRun?.metadata?.labels;
+  console.log('triggerHeader', triggerHeader);
+  const resolvedTriggerHeader = triggerHeader || (
+    <div className="timeContainer">
+      <p className="colHeader">Triggered by</p>
+      <div>
+        {pipelineRun?.metadata?.labels?.['triggers.tekton.dev/eventlistener']}
+      </div>
+      <div>
+        {pipelineRun?.metadata?.labels?.['triggers.tekton.dev/trigger']}
+      </div>
+    </div>
+  );
 
   function getPipelineRunError() {
     if (!pipelineRun.status?.taskRuns && !pipelineRun.status?.childReferences) {
@@ -89,6 +117,24 @@ export default /* istanbul ignore next */ function PipelineRun({
       !childReferences && { message, reason }
     );
   }
+
+  const completed = pipelineRun?.status?.completionTime;
+  const started = pipelineRun?.status?.startTime;
+  const runTimeInfo = (
+    <div className="timeContainer">
+      <p className="colHeader">Time</p>
+      <span>
+        <div className="startedTime" title="started">
+          Started:
+          <FormattedDate date={started} label="Started:" />
+        </div>
+        <div className="completedTime">
+          Completed:
+          <FormattedDate date={completed} />
+        </div>
+      </span>
+    </div>
+  );
 
   function onToggleLogsMaximized() {
     setIsLogsMaximized(prevIsLogsMaximized => !prevIsLogsMaximized);
@@ -227,6 +273,10 @@ export default /* istanbul ignore next */ function PipelineRun({
     status: pipelineRunStatus
   } = getStatus(pipelineRun);
 
+  if (pipelineRun) {
+    handlePipelineRunInfo({pipelineRunName,  message: pipelineRunStatusMessage, reason:pipelineRunReason, status: pipelineRunStatus });
+  }
+
   if (pipelineRunError) {
     return (
       <>
@@ -237,7 +287,7 @@ export default /* istanbul ignore next */ function PipelineRun({
           runName={pipelineRun.pipelineRunName}
           reason="Error"
           status={pipelineRunStatus}
-          triggerHeader={triggerHeader}
+          triggerHeader={resolvedTriggerHeader}
         />
         {customNotification}
         <InlineNotification
@@ -313,13 +363,17 @@ export default /* istanbul ignore next */ function PipelineRun({
   return (
     <>
       <RunHeader
+        getLabels={displayLabels}
+        icon={icon}
         lastTransitionTime={lastTransitionTime}
         loading={loading}
         message={pipelineRunStatusMessage}
-        runName={pipelineRunName}
         reason={pipelineRunReason}
+        runName={pipelineRunName}
+        runTimeInfo={runTimeInfo}
+        sourceRun={sourceRun}
         status={pipelineRunStatus}
-        triggerHeader={triggerHeader}
+        triggerHeader={resolvedTriggerHeader}
       >
         {runActions}
       </RunHeader>

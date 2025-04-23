@@ -17,12 +17,29 @@ limitations under the License.
 header.tkn--pipeline-run-header {
   @include type-style('body-compact-01');
   line-height: 1;
-  background: $layer;
   margin-block-end: 2em;
   padding-block: 0.4em;
-  padding-inline-start: 1.5em;
+  // padding-inline-start: 1.5em;
   padding-inline-end: 0;
 
+  .container{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      padding: 10px;
+      background: $layer;
+
+      .timeContainer .colHeader{
+        font-size: 0.75rem;
+        letter-spacing:0.32px;
+        font-weight: 400;
+      }
+      
+      .colHeader{
+        font-size: 0.75rem;
+        letter-spacing:0.32px;
+        font-weight: 400;
+      }
+  }
   .tkn--header-skeleton {
     margin-block-start: 0.9rem;
     block-size: 2rem;
