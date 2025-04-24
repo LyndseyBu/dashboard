@@ -51,7 +51,7 @@ export default /* istanbul ignore next */ function PipelineRun({
   getLogsToolbar,
   handleTaskSelected = /* istanbul ignore next */ () => {},
   handlePipelineRunInfo = () => {},
-
+  icon,
   loading,
   logLevels,
   maximizedLogsContainer,
@@ -70,7 +70,7 @@ export default /* istanbul ignore next */ function PipelineRun({
   showLogTimestamps,
   taskRuns,
   tasks,
-  //labels,
+  labels = pipelineRun?.metadata?.labels,
   triggerHeader,
   sourceRun,
   view = null
@@ -86,12 +86,11 @@ export default /* istanbul ignore next */ function PipelineRun({
   //     ))}
   //   </div>
   // );
-
-  const displayLabels = pipelineRun?.metadata?.labels;
-  console.log('triggerHeader', triggerHeader);
+   const displayLabels = labels;
   const resolvedTriggerHeader = triggerHeader || (
     <div className="timeContainer">
       <p className="colHeader">Triggered by</p>
+
       <div>
         {pipelineRun?.metadata?.labels?.['triggers.tekton.dev/eventlistener']}
       </div>
@@ -281,6 +280,7 @@ export default /* istanbul ignore next */ function PipelineRun({
     return (
       <>
         <RunHeader
+          icon={icon}
           lastTransitionTime={lastTransitionTime}
           loading={loading}
           pipelineRun={pipelineRun}
