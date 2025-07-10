@@ -12,6 +12,7 @@ limitations under the License.
 */
 
 export function getStatus(resource) {
+  console.log('resource', resource);
   const { conditions = [] } = resource.status || {};
   return conditions.find(condition => condition.type === 'Succeeded') || {};
 }

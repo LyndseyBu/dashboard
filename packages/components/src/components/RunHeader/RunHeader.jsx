@@ -12,7 +12,7 @@ limitations under the License.
 */
 
 import { useIntl } from 'react-intl';
-import { SkeletonPlaceholder } from '@carbon/react';
+import { InlineNotification, SkeletonPlaceholder } from '@carbon/react';
 import RunTimeMetadata from '../RunTimeMetadata';
 import RunMetadataColumn from '../RunMetadataColumn';
 import TagsWithOverflow from '../TagWithOverflow/TagsWithOverflow';
@@ -23,19 +23,42 @@ export default function RunHeader({
   description,
   displayRunHeader = true,
   duration = null,
-  resource,
+  pipelineRunError,
+  showFailureMessage,
   lastTransitionTime,
   loading,
   message,
   namespace,
   reason,
+  resource,
   runName,
   status,
   triggerHeader,
   triggerInfo
 }) {
   const intl = useIntl();
-
+  console.log("message," , message)
+  const errorNotification = (pipelineRunError || showFailureMessage) && (
+    <InlineNotification
+      kind="error"
+      hideCloseButton
+      lowContrast
+      title={intl.formatMessage(
+        {
+          id: pipelineRunError
+            ? 'dashboard.pipelineRun.failedMessage'
+            : 'dashboard.pipelineRun.ErrorMessage',
+          defaultMessage: pipelineRunError
+            ? 'Unable to load PipelineRun: {reason}'
+            : 'PipelineRun Error: {reason}'
+        },
+        {
+          reason
+        }
+      )}
+      subtitle={message}
+    />
+  );
   return (
     <header
       className="tkn--pipeline-run-header"
@@ -69,6 +92,7 @@ export default function RunHeader({
                   {children}
                 </h1>
               )}
+              {errorNotification}
               <div className="tkn--runmetadata-container">
                 <div className="tkn--columns">
                   {triggerInfo ? (

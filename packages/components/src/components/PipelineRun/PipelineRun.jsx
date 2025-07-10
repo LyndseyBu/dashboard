@@ -88,13 +88,14 @@ export default /* istanbul ignore next */ function PipelineRun({
     const {
       status: { childReferences, taskRuns: taskRunsStatus }
     } = pipelineRun;
-    const { message, status, reason } = getStatus(pipelineRun);
+    const { status } = getStatus(pipelineRun);
 
-    return (
-      status === 'False' &&
-      !taskRunsStatus &&
-      !childReferences && { message, reason }
-    );
+    return status === 'False' && !taskRunsStatus && !childReferences;
+  }
+
+  function showRunFailureMessage() {
+    const { status, reason } = getStatus(pipelineRun);
+    return status === 'False' && reason === 'Failed';
   }
 
   function onToggleLogsMaximized() {
@@ -226,6 +227,7 @@ export default /* istanbul ignore next */ function PipelineRun({
   const pipelineRunName =
     pipelineRun.metadata.name || pipelineRun.metadata.generateName;
   const pipelineRunError = getPipelineRunError();
+  const showFailureMessage = showRunFailureMessage();
 
   const {
     lastTransitionTime,
@@ -244,6 +246,28 @@ export default /* istanbul ignore next */ function PipelineRun({
   }
   let triggerInfo = null;
 
+  // const errorNotification = (pipelineRunError || showFailureMessage) && (
+  //   <InlineNotification
+  //     kind="error"
+  //     hideCloseButton
+  //     lowContrast
+  //     title={intl.formatMessage(
+  //       {
+  //         id: pipelineRunError
+  //           ? 'dashboard.pipelineRun.failedMessage'
+  //           : 'dashboard.pipelineRun.ErrorMessage',
+  //         defaultMessage: pipelineRunError
+  //           ? 'Unable to load PipelineRun: {reason}'
+  //           : 'PipelineRun Error: {reason}'
+  //       },
+  //       {
+  //         reason: pipelineRunReason
+  //       }
+  //     )}
+  //     subtitle={pipelineRunStatusMessage}
+  //   />
+  // );
+
   if (pipelineRun?.metadata?.labels) {
     const eventListener =
       pipelineRun.metadata.labels[labelConstants.EVENT_LISTENER];
@@ -261,42 +285,6 @@ export default /* istanbul ignore next */ function PipelineRun({
         </span>
       );
     }
-  }
-
-  if (pipelineRunError) {
-    return (
-      <>
-        <RunHeader
-          description={description}
-          displayRunHeader={displayRunHeader}
-          lastTransitionTime={lastTransitionTime}
-          duration={duration}
-          triggerInfo={triggerInfo}
-          resource={pipelineRun}
-          namespace={namespace}
-          loading={loading}
-          pipelineRun={pipelineRun}
-          runName={pipelineRun.pipelineRunName}
-          reason="Error"
-          status={pipelineRunStatus}
-          triggerHeader={triggerHeader}
-        />
-        {customNotification}
-        <InlineNotification
-          kind="error"
-          hideCloseButton
-          lowContrast
-          title={intl.formatMessage(
-            {
-              id: 'dashboard.pipelineRun.failedMessage',
-              defaultMessage: 'Unable to load PipelineRun: {reason}'
-            },
-            { reason: pipelineRunError.reason }
-          )}
-          subtitle={pipelineRunError.message}
-        />
-      </>
-    );
   }
 
   const taskRunsToUse = loadTaskRuns();
@@ -356,6 +344,8 @@ export default /* istanbul ignore next */ function PipelineRun({
     <>
       <RunHeader
         description={description}
+        showFailureMessage={showFailureMessage}
+        pipelineRunError={pipelineRunError}
         pipelineRefName={pipelineRefName}
         displayRunHeader={displayRunHeader}
         duration={duration}

@@ -411,6 +411,11 @@ export function TaskRunContainer({
     return <SkeletonText heading width="60%" />;
   }
 
+  const showFailureMessage = () => {
+    const { status, reason } = getStatus(taskRun);
+    return status === 'False' && reason !== 'Cancelled';
+  };
+
   if (error || !taskRun) {
     return (
       <NotFound
@@ -496,6 +501,7 @@ export function TaskRunContainer({
         message={taskRunStatusMessage}
         reason={taskRunStatusReason}
         runName={taskRun.metadata.name}
+        showFailureMessage={showFailureMessage}
         status={succeeded}
       >
         {runActions.length ? (
