@@ -133,7 +133,10 @@ const PipelineRuns = ({
       id: 'dashboard.tableHeader.status',
       defaultMessage: 'Status'
     }),
-    time: ''
+    time: intl.formatMessage({
+      id: 'dashboard.runMetadata.time',
+      defaultMessage: 'Time'
+    })
   };
 
   const headers = columns.map(column => {

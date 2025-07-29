@@ -50,6 +50,12 @@ const LogsToolbar = ({
           className={`${carbonPrefix}--btn ${carbonPrefix}--btn--icon-only ${carbonPrefix}--copy-btn`}
           onClick={onToggleMaximized}
           type="button"
+          aria-label={intl.formatMessage({
+            id: isMaximized
+              ? 'dashboard.logs.restore'
+              : 'dashboard.logs.maximize',
+            defaultMessage: isMaximized ? 'Return to default' : 'Maximize'
+          })}
         >
           {isMaximized ? (
             <Minimize>
