@@ -13,17 +13,16 @@ limitations under the License.
 /* istanbul ignore file */
 
 import { Component, createRef } from 'react';
-import { Button, PrefixContext, SkeletonText } from '@carbon/react';
-import { FixedSizeList as List } from 'react-window';
+import { PrefixContext, SkeletonText } from '@carbon/react';
+import { List } from 'react-window';
 import { injectIntl, useIntl } from 'react-intl';
 import { getStepStatusReason, isRunning } from '@tektoncd/dashboard-utils';
-import { DownToBottom, Information, UpToTop } from '@carbon/react/icons';
+import { Information } from '@carbon/react/icons';
+import LogScrollButtons from './LogScrollButtons'
 
 import {
   hasElementPositiveVerticalScrollBottom,
-  hasElementPositiveVerticalScrollTop,
-  isElementEndBelowViewBottom,
-  isElementStartAboveViewTop
+  isElementEndBelowViewBottom
 } from './domUtils';
 import DotSpinner from '../DotSpinner';
 import LogFormat from '../LogFormat';
@@ -89,16 +88,24 @@ export class LogContainer extends Component {
 
   componentDidMount() {
     this.loadLog();
-    if (this.props.enableLogAutoScroll || this.props.enableLogScrollButtons) {
+    if (this.props.enableLogAutoScroll) {
       this.wasRunningAfterMounting();
       window.addEventListener('scroll', this.handleLogScroll, true);
       this.handleLogScroll();
+
+      //Show scroll-to-bottom button immediately if scrollable on load
+      // setTimeout(() => {
+      //   const container = this.textRef?.current?.firstElementChild;
+      //   if (container && container.scrollHeight > container.clientHeight) {
+      //     this.setState({ isLogBottomUnseen: true });
+      //   }
+      // }, 0);
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (
-      (this.props.enableLogAutoScroll || this.props.enableLogScrollButtons) &&
+      this.props.enableLogAutoScroll &&
       (prevState.logs?.length !== this.state.logs?.length ||
         prevProps.isLogsMaximized !== this.props.isLogsMaximized)
     ) {
@@ -128,18 +135,10 @@ export class LogContainer extends Component {
   handleLogScroll = () => {
     if (!this.state.loading) {
       const isLogBottomUnseen = this.isLogBottomUnseen();
-      const isLogTopUnseen =
-        this.props.enableLogScrollButtons && this.isLogTopUnseen();
-      this.updateScrollButtonCoordinates();
 
-      if (
-        isLogBottomUnseen !== this.state.isLogBottomUnseen ||
-        (this.props.enableLogScrollButtons &&
-          isLogTopUnseen !== this.state.isLogTopUnseen)
-      ) {
+      if (isLogBottomUnseen !== this.state.isLogBottomUnseen) {
         this.setState({
-          isLogBottomUnseen,
-          isLogTopUnseen
+          isLogBottomUnseen
         });
       }
     }
@@ -163,15 +162,6 @@ export class LogContainer extends Component {
     );
   };
 
-  isLogTopUnseen = () => {
-    return (
-      isElementStartAboveViewTop(this.logRef?.current) ||
-      hasElementPositiveVerticalScrollTop(
-        this.textRef?.current?.firstElementChild
-      )
-    );
-  };
-
   scrollToBottomLog = () => {
     const longTextElement = this.textRef?.current?.firstElementChild;
     if (longTextElement) {
@@ -180,14 +170,6 @@ export class LogContainer extends Component {
     }
     const rootElement = document.documentElement;
     rootElement.scrollTop = rootElement.scrollHeight - rootElement.clientHeight;
-  };
-
-  scrollToTopLog = () => {
-    const longTextElement = this.textRef?.current?.firstElementChild;
-    if (longTextElement) {
-      longTextElement.scrollTop = 0;
-    }
-    document.documentElement.scrollTop = 0;
   };
 
   wasRunningAfterMounting = () => {
@@ -201,98 +183,6 @@ export class LogContainer extends Component {
       return true;
     }
     return false;
-  };
-
-  updateScrollButtonCoordinates = () => {
-    if (this.props.enableLogScrollButtons) {
-      const logRectangle = this.logRef.current?.getBoundingClientRect();
-      const logElementRight =
-        document.documentElement.clientWidth - logRectangle.right;
-
-      const scrollButtonTop = Math.max(0, logRectangle.top);
-
-      const scrollButtonBottom = Math.max(
-        0,
-        document.documentElement.clientHeight - logRectangle.bottom
-      );
-
-      this.updateCssStyleProperty(logElementRight, '--tkn-log-element-right');
-      this.updateCssStyleProperty(scrollButtonTop, '--tkn-scroll-button-top');
-      this.updateCssStyleProperty(
-        scrollButtonBottom,
-        '--tkn-scroll-button-bottom'
-      );
-    }
-  };
-
-  updateCssStyleProperty = (computedVariable, variableName) => {
-    // instead of using a state variable + inline styling for the button vertical position,
-    // a class variable + css custom property are used (avoiding unnecessary re-rendering of entire component)
-    if (
-      !Number.isNaN(computedVariable) &&
-      this[variableName] !== computedVariable
-    ) {
-      this[variableName] = computedVariable;
-      document.documentElement.style.setProperty(
-        variableName,
-        `${computedVariable.toString()}px`
-      );
-    }
-  };
-
-  getScrollButtons = () => {
-    const carbonPrefix = this.context;
-    const { enableLogScrollButtons, intl } = this.props;
-    const { isLogBottomUnseen, isLogTopUnseen, loading } = this.state;
-
-    if (!enableLogScrollButtons || loading) {
-      return null;
-    }
-    const scrollButtonTopMessage = intl.formatMessage({
-      id: 'dashboard.logs.scrollToTop',
-      defaultMessage: 'Scroll to start of logs'
-    });
-    const scrollButtonBottomMessage = intl.formatMessage({
-      id: 'dashboard.logs.scrollToBottom',
-      defaultMessage: 'Scroll to end of logs'
-    });
-
-    return (
-      <div className="button-container">
-        {isLogTopUnseen ? (
-          <Button
-            className={`${carbonPrefix}--copy-btn`}
-            hasIconOnly
-            iconDescription={scrollButtonTopMessage}
-            id="log-scroll-to-start-btn"
-            onClick={this.scrollToTopLog}
-            renderIcon={() => (
-              <UpToTop>
-                <title>{scrollButtonTopMessage}</title>
-              </UpToTop>
-            )}
-            size="sm"
-            tooltipPosition="right"
-          />
-        ) : null}
-        {isLogBottomUnseen ? (
-          <Button
-            className={`${carbonPrefix}--copy-btn`}
-            iconDescription={scrollButtonBottomMessage}
-            hasIconOnly
-            id="log-scroll-to-end-btn"
-            onClick={this.scrollToBottomLog}
-            renderIcon={() => (
-              <DownToBottom>
-                <title>{scrollButtonBottomMessage}</title>
-              </DownToBottom>
-            )}
-            size="sm"
-            tooltipPosition="right"
-          />
-        ) : null}
-      </div>
-    );
   };
 
   getLogList = () => {
@@ -396,7 +286,7 @@ export class LogContainer extends Component {
     // otherwise we end up with wrong message about hidden lines displayed to
     // user even when all groups are expanded
     const displayedLogLines = parsedLogs.length + countEndGroupCommands;
-    if (parsedLogs.length < 20_000) {
+    if (parsedLogs.length < 200) {
       return (
         <>
           <LogsFilteredNotification
@@ -416,6 +306,27 @@ export class LogContainer extends Component {
       ? Math.min(defaultHeight, itemSize * logs.length)
       : defaultHeight;
 
+    function LogRow({
+      index,
+      parsedLogs,
+      showLevels,
+      showTimestamps,
+      onToggleGroup,
+      style
+    }) {
+      const log = parsedLogs[index];
+
+      return (
+        <div style={style}>
+          <LogFormat
+            fields={{ level: showLevels, timestamp: showTimestamps }}
+            logs={[log]}
+            onToggleGroup={onToggleGroup}
+          />
+        </div>
+      );
+    }
+
     return (
       <>
         <LogsFilteredNotification
@@ -423,22 +334,18 @@ export class LogContainer extends Component {
           totalLogLines={logs.length}
         />
         <List
-          height={height}
-          itemCount={parsedLogs.length}
-          itemData={parsedLogs}
-          itemSize={itemSize}
+          rowComponent={LogRow}
+          rowCount={parsedLogs.length}
+          rowHeight={itemSize}
+          defaultHeight={height}
           width="100%"
-        >
-          {({ data, index, style }) => (
-            <div style={style}>
-              <LogFormat
-                fields={{ level: showLevels, timestamp: showTimestamps }}
-                logs={[data[index]]}
-                onToggleGroup={this.onToggleGroup}
-              />
-            </div>
-          )}
-        </List>
+          rowProps={{
+            parsedLogs,
+            showLevels,
+            showTimestamps,
+            onToggleGroup: this.onToggleGroup
+          }}
+        />
       </>
     );
   };
@@ -606,11 +513,10 @@ export class LogContainer extends Component {
         ) : (
           <>
             {toolbar}
-            <div className="tkn--log-container" ref={this.textRef}>
+            <div height="200px" className="tkn--log-container" ref={this.textRef}>
               {this.getLogList()}
             </div>
             {this.logTrailer()}
-            {this.getScrollButtons()}
           </>
         )}
       </pre>

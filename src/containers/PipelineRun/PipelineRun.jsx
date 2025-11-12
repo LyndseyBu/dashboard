@@ -521,7 +521,7 @@ export /* istanbul ignore next */ function PipelineRunContainer({
       <PipelineRun
         duration={duration}
         enableLogAutoScroll={!enableTabLayout}
-        enableLogScrollButtons={!enableTabLayout}
+        //enableLogScrollButtons={true}
         enableTabLayout={enableTabLayout}
         error={error}
         fetchLogs={getLogsRetriever({

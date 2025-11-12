@@ -194,7 +194,7 @@ export function TaskRunContainer({
       >
         <Log
           enableLogAutoScroll
-          enableLogScrollButtons
+          //enableLogScrollButtons
           fetchLogs={() =>
             logsRetriever({ stepName, stepStatus, taskRun: run })
           }

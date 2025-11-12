@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createHashRouter,
@@ -23,7 +23,7 @@ import {
   useNavigate
 } from 'react-router-dom';
 import { IntlProvider, useIntl } from 'react-intl';
-import { Content, HeaderContainer, InlineNotification } from '@carbon/react';
+import { Button, Content, HeaderContainer, InlineNotification } from '@carbon/react';
 import { PageErrorBoundary } from '@tektoncd/dashboard-components';
 import {
   ALL_NAMESPACES,
@@ -31,6 +31,7 @@ import {
   urls,
   useWebSocketReconnected
 } from '@tektoncd/dashboard-utils';
+import { DownToBottom, UpToTop } from '@carbon/react/icons';
 
 import {
   ErrorPage,
@@ -102,6 +103,102 @@ function HeaderNameLink(props) {
   return <Link {...props} to={urls.about()} />;
 }
 
+function ScrollButtons() {
+  const intl = useIntl();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [isPageScrollable, setIsPageScrollable] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const scrollBottom = scrollHeight - scrollTop - clientHeight;
+
+      // is page scrollable?
+      const isScrollable = scrollHeight > clientHeight;
+      setIsPageScrollable(isScrollable);
+
+      // Show scroll to top button if scrolled down more than 300px
+      setShowScrollTop(scrollTop > 300);
+
+      // Show scroll to bottom button if page is scrollable & there's more than 100px to scroll
+      setShowScrollBottom(isScrollable && scrollBottom > 100);
+    };
+
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll);
+    // Also check on resize
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const scrollToBottom = () => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+  };
+
+  const scrollTopMessage = intl.formatMessage({
+    id: 'dashboard.app.scrollToTop',
+    defaultMessage: 'Scroll to top'
+  });
+
+  const scrollBottomMessage = intl.formatMessage({
+    id: 'dashboard.app.scrollToBottom',
+    defaultMessage: 'Scroll to bottom'
+  });
+
+  if (!isPageScrollable || (!showScrollTop && !showScrollBottom)) {
+    return null;
+  }
+
+  return (
+    <div className="tkn--scroll-buttons">
+      {showScrollTop && (
+        <Button
+          className="tkn--scroll-button"
+          hasIconOnly
+          iconDescription={scrollTopMessage}
+          kind="secondary"
+          onClick={scrollToTop}
+          renderIcon={() => (
+            <UpToTop>
+              <title>{scrollTopMessage}</title>
+            </UpToTop>
+          )}
+          size="md"
+          tooltipPosition="left"
+        />
+      )}
+      {showScrollBottom && (
+        <Button
+          className="tkn--scroll-button"
+          hasIconOnly
+          iconDescription={scrollBottomMessage}
+          kind="secondary"
+          onClick={scrollToBottom}
+          renderIcon={() => (
+            <DownToBottom>
+              <title>{scrollBottomMessage}</title>
+            </DownToBottom>
+          )}
+          size="md"
+          tooltipPosition="left"
+        />
+      )}
+    </div>
+  );
+}
+
 function Root() {
   const lang = getLocale(navigator.language);
   const location = useLocation();
@@ -152,6 +249,8 @@ function Root() {
           <Outlet />
         </PageErrorBoundary>
       </Content>
+
+      <ScrollButtons />
     </>
   );
 }

@@ -15,6 +15,44 @@ limitations under the License.
 @use '@carbon/react/scss/theme' as *;
 @use '@carbon/react/scss/type' as *;
 
+.tkn--log-scroll-buttons {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1000;
+  pointer-events: auto;
+
+  // When in maximize mode, position differently to avoid overlap with page scroll buttons
+  &[data-maximize-mode="true"] {
+    z-index: 1001; // Higher z-index so it's above page scroll buttons
+  }
+
+  .tkn--log-scroll-button {
+    background-color: var(--cds-ui-03);
+    border-radius: 50%;
+    
+    &:hover {
+      background-color: var(--cds-ui-04);
+    }
+  }
+}
+
+.tkn--scroll-buttons {
+  position: fixed;
+  right: .25rem;
+  bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 8000; // Above content but below modals
+}
+
+.tkn--scroll-button {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
 pre.tkn--log {
   --tkn-log-inline-padding: 1.6rem;
   position: relative;
@@ -64,27 +102,27 @@ pre.tkn--log {
 
   .button-container {
     position: absolute;
-    clip-path: inset(0); // ensure the children with position:fixed are not shown outside this element.
+   // clip-path: inset(0); // ensure the children with position:fixed are not shown outside this element.
     inset-block-start: 3.125rem; //equals the maximum between padding-block-start of pre.tkn--log and between the page header height
     inset-block-end: 0;
     inset-inline-end: 0;
     inline-size: var(--tkn-log-inline-padding);
   }
 
-  #log-scroll-to-start-btn, #log-scroll-to-end-btn {
+  .cds--popover-container:has(#log-scroll-to-start-btn, #log-scroll-to-end-btn) {
     position: fixed;
     inset-inline-end: var(--tkn-log-element-right);
 
-    &::before { // the tooltip is not shown because it is outside of its parent .button-container (which has clip-path inset) But fin still appears.
-      content: none; // To remove fin of truncated tooltip. To  obtain higher specificity than Carbon css, id selector is needed.
-    }
+    // &::before { // the tooltip is not shown because it is outside of its parent .button-container (which has clip-path inset) But fin still appears.
+    //   content: none; // To remove fin of truncated tooltip. To  obtain higher specificity than Carbon css, id selector is needed.
+    // }
   }
   
-  #log-scroll-to-start-btn {
+  .cds--popover-container:has(#log-scroll-to-start-btn) {
     inset-block-start: calc(var(--tkn-scroll-button-top) + 3.125rem); //3.125 rem is the maximum between padding-block-start of pre.tkn--log and between the page header height
   }
 
-  #log-scroll-to-end-btn {
+  .cds--popover-container:has(#log-scroll-to-end-btn){
     inset-block-end: var(--tkn-scroll-button-bottom);
   }
 
